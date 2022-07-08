@@ -1,7 +1,7 @@
 = Hacking Generator Functions in {cpp}
 
 :keywords: {cpp}, functions, hacking, lambdas, programming, x86-64
-:description: Taking a look at all the dark corners regarding lambas in {c++}.
+:description: Taking a look at all the dark corners regarding lambdas in {c++}.
 :author: Kayomn
 
 == Preface
@@ -35,9 +35,9 @@ void beforeLambdas() {
 
 Achieving "lambda-like" functionality in a pre-C+\+11 world was feasible; primitive operator overloading and the object model provided by {cpp} from the get-go allowed for making structs that somewhat visibly behaved like functions at the call-site, although with a lot of associated boilerplate.
 
-Practically, this was no different than writing a highly-specialised and, arguably redundant single-method class. In many cases, this made type-erasing callback interfaces like C's https://en.cppreference.com/w/c/algorithm/qsort[`qsort`] preferable as a lower-boilerplate solution.
+Practically, this was no different than writing a highly-specialized and, arguably redundant single-method class. In many cases, this made type-erasing callback interfaces like C's https://en.cppreference.com/w/c/algorithm/qsort[`qsort`] preferable as a lower-boilerplate solution.
 
-Irrespective of individual developer sentiment, the {cpp} standard library adopted functors for much of its https://en.cppreference.com/w/cpp/algorithm[algorithm] and https://en.cppreference.com/w/cpp/container[container] libraries, where a type-safe callback for customisable logic was necessary.
+Irrespective of individual developer sentiment, the {cpp} standard library adopted functors for much of its https://en.cppreference.com/w/cpp/algorithm[algorithm] and https://en.cppreference.com/w/cpp/container[container] libraries, where a type-safe callback for customizable logic was necessary.
 
 [source, cpp]
 ----
@@ -163,11 +163,11 @@ pop r13
 ret
 ----
 
-The lack of dynamic allocation overhead with lambdas in {cpp} can be visibly observed if the disassembly for the previous code sample is viewed, wherein no calls to `malloc`, {cpp}'s `new` implementation, or otherwise. In fact, through closer inspection of the above Clang 11 x86-64 dissassembly, the `destroyChain` lambda has been completely elided, instead inlining its operations to each of its two call-sites.
+The lack of dynamic allocation overhead with lambdas in {cpp} can be visibly observed if the disassembly for the previous code sample is viewed, wherein no calls to `malloc`, {cpp}'s `new` implementation, or otherwise. In fact, through closer inspection of the above Clang 11 x86-64 disassembly, the `destroyChain` lambda has been completely elided, instead inlining its operations to each of its two call-sites.
 
 This leaves the intrinsic `__assert_fail` and user-defined `Allocator::Deallocate(void *)` functions as the only remaining `call` instructions in the generated output, the latter of which is a virtual function and is therefore significantly harder to statically inline as opposed to a statically allocated lambda functor.
 
-However, the specification and intrinsics of lambdas in {cpp} isn't really the concern of this article. Rather, I'm more interested in looking at how lambdas can be broken to implement support for *function*ality they was never intended.
+However, the specification and intrinsics of lambdas in {cpp} isn't really the concern of this article. Rather, I'm more interested in looking at how lambdas can be broken to implement support for *functionality* they was never intended.
 
 == Generative Functions
 
@@ -215,7 +215,7 @@ int main(int argc, char ** argv) {
 }
 ----
 
-Or rather, this is the case until the lambda declaration is annotated with the `mutable` keyword, afterwhich, the source code compiles and the desired behavior is produced.
+Or rather, this is the case until the lambda declaration is annotated with the `mutable` keyword, after which, the source code compiles and the desired behavior is produced.
 
 == Mutable {cpp} Functors
 
@@ -238,11 +238,11 @@ Were `i` to be `mutable` by default in the above example, any invocation of `mod
 
 === Parallelism Concerns with Shared Functors
 
-The previous concern is complicated further if lambda instances are shared between parallel units of computation, like threads, as this capture could be being modified simultaneously. This would result in unforseen race conditions, as the lambda could have otherwise been considered https://en.wikipedia.org/wiki/Pure_function[mathematically pure] in the sense that its inputs were immutable.
+The previous concern is complicated further if lambda instances are shared between parallel units of computation, like threads, as this capture could be being modified simultaneously. This would result in unforeseen race conditions, as the lambda could have otherwise been considered https://en.wikipedia.org/wiki/Pure_function[mathematically pure] in the sense that its inputs were immutable.
 
 === Functional Influences
 
-A catch-all for both of the above without fully understanding the domain of concerns. This hypothosizes that the committee may have settled to make captures `const` by default because "functional languages like `const` a lot". While this is a somewhat naive and very cynical view of the thought-process of hundreds of intelligent individuals, it is common that the sum of a group is a lot dumber than the people that compose them. Furthermore, with with a language that has as many moving parts as {cpp}, oversights have been and continue to be frequent. Therefore, cordening off an entire area of potential problems would serve as an effective solution until more experimentation with them could be undertaken.
+A catch-all for both of the above without fully understanding the domain of concerns. This hypothesizes that the committee may have settled to make captures `const` by default because "functional languages like `const` a lot". While this is a somewhat naive and very cynical view of the thought-process of hundreds of intelligent individuals, it is common that the sum of a group is a lot dumber than the people that compose them. Furthermore, with with a language that has as many moving parts as {cpp}, oversights have been and continue to be frequent. Therefore, cordoning off an entire area of potential problems would serve as an effective solution until more experimentation with them could be undertaken.
 
 === Concluding
 

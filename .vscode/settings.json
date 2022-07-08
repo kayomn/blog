@@ -2,9 +2,20 @@
     "cSpell.words": [
         "ARVR",
         "Autoloads",
+        "cout",
+        "Deallocate",
+        "DWORD",
+        "functors",
         "gameplay",
         "GLES",
         "GLTF",
+        "intrinsics",
+        "Kayomn",
+        "malloc",
+        "QWORD",
+        "struct",
+        "structs",
+        "Sutter",
         "Vulkan"
     ]
 }

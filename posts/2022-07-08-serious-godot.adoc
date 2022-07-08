@@ -4,13 +4,13 @@ Recently, my days at work have been focused around leading production of researc
 
 One such project, a prototype virtual reality (VR) therapy simulation for the Meta (formerly Oculus) Quest 2, has started to wrap up now as we move into the final patching phase and I felt it worth writing about as we used the Godot game engine to power it.
 
-While the project hasn't been entirely smooth-sailing, we identified a lot of new workflows unique to Godot and found it to be an overall pleasant experience compared to alternatives tools targeting the Oculus Quest 2.
+While the project has not been entirely smooth-sailing, we identified a lot of new workflows unique to Godot and found it to be an overall pleasant experience compared to alternatives tools targeting the Oculus Quest 2.
 
 == The State of Unity in 2022
 
 Initially, we intended to use the Unity game engine for production of the project, as anecdotal evidence from various VR communities suggested it had the most momentum over alternatives like Unreal Engine. Combined with the XR Interaction Toolkit, a virtual reality software development kit (SDK) that I have previously used and estimated was leaps ahead of others, Unity was very quickly pinned as the decided toolkit.
 
-Development with Unity didn't start out nor continue to be smooth, unfortunately, as within the initial two weeks of development we identified numerous roadblocks to getting work done.
+Development with Unity did not start out nor continue to be smooth, unfortunately, as within the initial two weeks of development we identified numerous roadblocks to getting work done.
 
   * Conflicts between the Android Debug Bridge provided by the Android Software Development Kit  and Unity itself.
 
@@ -20,17 +20,17 @@ Development with Unity didn't start out nor continue to be smooth, unfortunately
 
 Beyond these practical issues, we also faced problems with dependency hell. Since I last used the XR Interaction Toolkit, Unity has migrated everything to their new Input Management System - https://www.reddit.com/r/gamedev/comments/het6br/unity_has_become_an_absolute_nightmare/[a system which has been panned in user communities] due to its immense boilerplate for the sake of generality across multiple input devices. Irrespective of where you stand on generalizing specific problems, the reality is our target platforms was a set of one: the Meta Quest 2.
 
-Further dependency hell issues cropped up due to the Meta Quest 2 going through somewhat of an awkward phase where it was migrating from the Meta VrApi to the OpenXR standard. By the time we started production, Meta was actively discouraging use of its proprietary API as https://developer.oculus.com/blog/oculus-all-in-on-openxr-deprecates-proprietary-apis/[it is deprecated and will be unsupported come August 31st 2022]. That being said, switching the backend to OpenXR wasn't a silver bullet - as there were Meta-specific features we needed which, while supported, aren't enabled in Unity's build of the OpenXR library that it deploys to the device.
+Further dependency hell issues cropped up due to the Meta Quest 2 going through somewhat of an awkward phase where it was migrating from the Meta VrApi to the OpenXR standard. By the time we started production, Meta was actively discouraging use of its proprietary API as https://developer.oculus.com/blog/oculus-all-in-on-openxr-deprecates-proprietary-apis/[it is deprecated and will be unsupported come August 31st 2022]. That being said, switching the backend to OpenXR was not a silver bullet - as there were Meta-specific features we needed which, while supported, are not enabled in the Unity OpenXR library build that it deploys to the device.
 
 == Looking Elsewhere
 
-While I had no doubt that we could brute-force our way through the Unity workflow issues, I didn't believe that the fundamental hardware-to-software interaction reliability we were experiencing would go away without significant work between ourselves and our IT support team. Consequently, this opened up an important question.
+While I had no doubt that we could brute-force our way through the Unity workflow issues, I did not believe that the fundamental hardware-to-software interaction reliability we were experiencing would go away without significant work between ourselves and our IT support team. Consequently, this opened up an important question.
 
 > Would the time cost of sticking with Unity be lower than the cost of migrating to an entirely different engine?
 
 This was the inspiration I needed to start exploring alternatives to Unity before the project gained too much momentum and we had completely left the planning phase behind. Unfortunately, many of the popular alternatives were quickly ruled out due to our inexperience with their virtual reality offerings and the smaller active VR communities where advice could be found - putting us back where we started with Unity.
 
-Feeling burnt out from the state of the project, I spent the weekend looking for ways to escape with personal projects I had been working on in the Godot game engine - an engine that I am personally very fond of but hadn't ever used on any serious projects. After realizing that the engine had an `ARVRCamera` (now `XRCamera` in Godot 4) class, this made me start looking into what Godot could do with cross-reality.
+Feeling burnt out from the state of the project, I spent the weekend looking for ways to escape with personal projects I had been working on in the Godot game engine - an engine that I am personally very fond of but had not ever used on any serious projects. After realizing that the engine had an `ARVRCamera` (now `XRCamera` in Godot 4) class, this made me start looking into what Godot could do with cross-reality.
 
 To my surprise, they already had far smoother integration of the OpenXR and VrAPI backends. Furthermore, the open-source nature of both the engine and its OpenXR plugin asset meant that enabling the necessary Meta OpenXR extensions was a case of modifying the available source code to load them and recompiling the shared object for Android. This was enough to pique my interest in using Godot on a serious project for the first time.
 
@@ -38,78 +38,103 @@ The final consideration made was visual quality. There is no question that - bet
 
 == Migrating to Godot
 
-Migration wasn't difficult nor time-consuming as there were only a handful of finished assets and very little code had been written by this point. The nature of the Unity XR Interaction Toolkit is that most of the setup work happens in-editor by creating game objects, attaching components, and linking their events together.
+Migration was not difficult nor time-consuming as there were only a handful of finished assets and very little code had been written by this point. The nature of the Unity XR Interaction Toolkit is that most of the setup work happens in-editor by creating game objects, attaching components, and linking their events together.
 
-Comparatively, Godot's OpenXR plugin asset does not come with this level of pre-setup; there are no provided VR ray or area interaction components. Instead, it provides primitives like `ARVRController` (now `XRController` in Godot 4) and expects the programmer to implement their own logic for handling spatial interactions. Personally, I prefer this approach as it gave us far more granular control over how the interactions worked and under what conditions they were triggered. However, it's clear to me that this can make setup tedious for hobbyists that want to get something simple going quickly.
+Comparatively, the Godot OpenXR plugin does not come with this level of pre-setup; there are no provided VR ray or area interaction components. Instead, it provides primitives like `ARVRController` (now `XRController` in Godot 4) and expects the programmer to implement their own logic for handling spatial interactions. Personally, I prefer this approach as it gave us far more granular control over how the interactions worked and under what conditions they were triggered. However, it is clear to me that this can make setup tedious for hobbyists that want to get something simple going quickly.
 
-After migrating, the next step was re-evaluating all of our best practices. I mentioned that I have used Godot before in hobby projects, but never for something to the scale of this project. Obviously, the same workflows I had employed in Unity wouldn't work here as the architectures between it and Godot were intrinsically different.
+After migrating, the next step was re-evaluating all of our best practices. I mentioned that I have used Godot before in hobby projects, but never for something to the scale of this project. Obviously, the same workflows I had employed in Unity would not work here as the architectures between it and Godot were intrinsically different.
 
 === Asset Workflow
 
-Godot 3 uses a single-threaded importer which is slow as fuck. This has been fixed in 4 but is no use to us since that is still in alpha.
+:fn-godot-4-importer: footnote:[Godot 4 alpha uses a multi-threaded import design that significantly decreases import times as each file can be processed in parallel - however, the user interface is still locked while they are processed.]
 
-Our ITS policy doesn't support roaming profiles, so this made anyone doing hot-desk work suffer as they would need to clone and re-import the whole project.
+For example, Godot 3 uses a single thread for importing assets that locks the entire editor user interface while it processes the resources {fn-godot-4-importer}. While this is not so much of an issue for individual files, it becomes a major source of pain when importing 8 4k atlases textures - something we did for every environment in the project.
 
-==== 3D Art
+The import time is only compounded by our workstations not supporting roaming profiles. This means that people who worked under a hot-desk arrangement had to wait upwards of 15 minutes at the start of every day while a newly cloned repository generated an import cache for the editor.
 
-By far the biggest asset workflow issue we had throughout the whole project was working with Autodesk FBX files in Godot. Being an MIT licensed project, Godot is constrained by the kinds of third-party tools it can depend on. One such utility is the the Autodesk FBX SDK - a closed-source, and arguably only reliable, FBX importer and exporter implementation.
+That being said, import speeds were not the biggest issue we had - that actually goes to working with Autodesk FBX files. Being an MIT licensed project, Godot is constrained by the kinds of third-party tools it can depend on. One such utility is the the Autodesk FBX SDK - a closed-source, and arguably only reliable, FBX importer and exporter implementation.
 
 Godot 3 currently uses a reverse-engineered FBX importer that _usually_ behaves appropriately. Even so, erroneous import data in things like rigged models happened often enough for it to be a significant impedance to work.
 
 :fn-godot-4-fbx: footnote:[Godot 4 alpha currently does not ship a built-in FBX importer anymore, instead requiring the user to provide a path to an external FBX2GTF installation.]
 
-I already had experience under my belt dealing with issues like this in both Godot _and_ Unity. Our first solution was to https://knowledge.autodesk.com/search-result/caas/simplecontent/content/turning-segment-scale-compensate-maya-how-to-make-maya-rigs-play-nice-unity.html[disable segment scale compensate], however this typically only resolved issues with rigging errors in models.
+Fortunately, I already had experience dealing with issues like this in both Godot _and_ Unity and knew a few workarounds. Our first attempt at solving our issues was to https://knowledge.autodesk.com/search-result/caas/simplecontent/content/turning-segment-scale-compensate-maya-how-to-make-maya-rigs-play-nice-unity.html[disable segment scale compensate], however this typically only resolved issues with rigging errors in models.
 
-Eventually, we decided to add an additional step to the import workflow which converted all of our FBX files to GLB via the https://github.com/facebookincubator/FBX2glTF[`FBX2GLTF`] converter created by Meta Incubator (formerly FaceBook Incubator) {fn-godot-4-fbx}. This side-stepped our issues to the extent where we decided to blanket ban FBX files from the project codebase in favor of converting everything to GLB scenes or OBJ meshes.
+Eventually, we decided to add an additional step to the import workflow to convert all of our FBX files to GLB via the https://github.com/facebookincubator/FBX2glTF[`FBX2GLTF`] converter created under Meta Incubator (formerly FaceBook Incubator) {fn-godot-4-fbx}. This side-stepped our issues to the extent where we decided to blanket ban FBX files from the project codebase in favor of converting everything to GLB scenes or OBJ meshes.
 
-There are Maya plugins that allow direct export to GLTF/GLB, however we did not see the time investment to get it deployed to all art machines and teach an entirely new export workflow to our artists.
+There are Maya plugins that allow direct export to GLTF/GLB, however we did not see the time investment to get it deployed to all art machines and teach an entirely new export workflow to our artists. Overall, the art workflow was the hardest thing to get right but once we did, it felt very efficient compared to where we had started.
 
 === Project File Structure
 
-Conversely to art workflow, project structure felt like the easiest thing to get right out of the gate then presented greater issues down the line.
+Conversely, I felt project structure was the easiest thing to get right out of the gate. With any project based in a games engine, I have typically followed the approach of organizing by file purpose rather than file type, however defining what "purpose" is can sometimes be difficult.
 
-Sensible structure - I like sorting files by use rather than type.
+  * characters
+  ** actors
+  ** player
 
-For folder structure, I like sorting things into individual systems.
+  * props
+  ** prop1
+  *** model.glb
+  *** material.res
+  *** albedo_map.png
+  *** normal_map.png
+
+  * environments
+  ** environment1
+  *** model.glb
+  *** material.res
+  *** albedo_map.png
+  *** normal_map.png
+  *** roughness_map.png
+
+In the solution we had, each folder at the root of the project was its own game "system" or feature; actors served as the folder containing NPC data and assets, props contained items that could be picked up by the player character, and environments held the 3D environment assets.
+
+There were more systems than this, but this example communicates the ideas without getting unnecessarily specific. Common shaders, sound effects, and other miscellaneous, shared assets either went into the root directory or were filtered into a `base` folder to be shared between scenes that inherited from a common "base" scene.
 
 === The Scene Tree
 
-Godot uses a scene graph closer to an XML DOM than Unity's nested components in game objects.
+On the note of the scene hierarchy and Godot scenes in general, they were a consistently big win for the project. Godot uses a scene graph system closer to that of a document object model like XML, or 3D model scene like Blender or Autodesk Maya supports. Scenes are composed from hierarchies of single-purpose nodes (i.e. cameras, rigid bodies, meshes, etc.) rather than the more complicated game object / actor models assembled from individual components of Unity, Unreal Engine, and Open 3D Engine.
 
-The simplicity of it is beautiful but it exposes some nightmarish composition problems at times, as you can't have a node that is multiple types.
+While this streamlines modelling simple systems, it can quickly become nightmarish to establish complex cross-talk between nodes through scripts alone - as you would either need to hardcode paths between nodes or expose path properties in the editor to be manually set.
 
-=== Autoloads and Global State
+To side-step this from being too much of a pain-point, Godot provides a highly dynamic event-based callback system for each object type called "signals" - similar to event dispatchers in Unreal Engine. Through signals, an object can easily send events to trigger logic in others and allows for code reusability.
 
-Godot has global objects that can be set up in project settings.
+Finally, just like individual nodes themselves, scenes can be inherited and composed within each other. This is by no means a revolution feature, as Unity has equivalent features with prefabs, the editor ergonomics Godot provides for this makes it trivial to do so and then tweak the instantiated scene properties for further individual control.
 
-Very useful for an asynchronous resource manager I had to write.
-
-Autoloads are no different than regular nodes in the scene tree.
-
-Completely eliminates the need for a setup scene.
+This feature was used extensively for assembly our "Actor" non-player characters in the project. Each actor derives from the base actor scene that contains `actor.gd` base functionality script and provides all of the common nodes for voice audio playback, visual feedback queues, and a speech bubble for displaying dialogue text.
 
 === Programming Interface
 
-Godot supports C# but its integration is not as clean as GDScript.
+Sharing the `actor.gd` script between many derived scenes though quickly made it become a monolithic class containing functionality not necessary to be shared between all actors. This presented a common issue that presents itself in object-oriented programming where it encourages composition through hierarchies.
 
-Furthermore, while it is faster to execute, it has a much larger in-memory footprint because every class instance has a C# wrapper allocated for it.
+However, the actor hierarchy was one level deep, as we never had an actor inheriting from anything but the base actor. This helped us approach the problem more like an interface generality problem over anything else, and quickly realized the solution was to lift much of these implementations out of the base actor class and then extend it through built-in scripts within the individual deriving actor scenes.
 
-GDScript has tight integration with the editor and very nice ergonomics for doing things like referencing nodes in a scene the script is instantiated in
+Godot has the notion of "built-in scripts" - scripts that are embedded inside of another resource rather than kept externally in the file system. While this has obvious drawbacks when being able to diff changes to gameplay system logic, for simple single-use scripts like gameplay-level logic we found this to be great for compartmentalizing the less important systems from more important ones.
 
-GDScripts can also be embedded in scenes, and this helps avoid filling the project directory up with single-use files containing tightly coupled gameplay logic
+Actors were one example where we used built-in scripts to inherit a custom node type that we created, however we also used built-in scripts for scene-specific event sequences that embedded implementation details like dialogue. At this level of coupling, we thought it reasonable to make use of the engine-specific ergonomics offered by GDScript.
 
-I like to write standalone GDScripts in a generalized sense where they don't have any implementation details that ties them to a scene then use node paths, signals, and function overloading to provide implementation details in a scene that either instantiates it directly or inherits it as a built-in script
+[source, GDScript]
+----
+var actor := $MyActor as Actor
 
-For any scripts that live in the file system, I also always name them.
+yield(actor.say(HELLO_WORLD_DIALOGUE), "dismissed")
+actor.hide()
+----
+
+The ability to reference other nodes in a script from within the scene it is instantiated in was immensely useful in avoiding the inspector soup problem where many references to other game objects and components must each be manually assigned one-by-one to various serialized properties.
+
+It also bears mentioning that Godot has a separately released version of its engine that ships with C# support through Mono currently. While the integration serves the purpose of providing a C# programming interface, its integration with the engine is nowhere near as clean as GDScript.
+
+For this project, we exclusively kept to the "vanilla" variant of Godot and utilized a mostly GDScript-based approach. Certainly, shipping everything in C# instead would have better general performance, but C# in Godot also suffers from a significantly higher memory footprint because of how it ships with its own standard library and every Godot-native object reference is wrapped in its own C#-allocated class.
+
+=== Autoloads and Global State
+
+The final Godot feature worth mentioning when we adapted to Godot is how it handles global state. A script or scene instance that needs to reside between many root scenes may be defined as an "Autoload" - something loaded and instantiated by the engine automatically when the game launches.
+
+We used Autoloads sparingly for handling two scenarios: player progress and game resource management. The former came out of necessity to transfer player state between scenes easily without making the player scene persistent, while the resource manager was pure necessity as we needed a way to easily and safely load scenes in the background asynchronously while by working around the single-threaded, synchronous asset loading pipeline used by Godot 3.
 
 == Retrospecting
 
-The effort to re-identify some scalable practices took a lot of trial in the first week and permeated throughout the rest of the project in a more minor capacity through incremental changes fixing mistakes made early on. However, I believe that the experience provided important lessons learned.
+The effort to re-identify some scalable practices took a lot of trial in the first week and then further permeated throughout the rest of the project duration in a more minor capacity through incremental changes fixing mistakes made early on. However, I believe that the experience provided important lessons learned and has better prepared us for using Godot again, which we are currently reviewing for our next project.
 
-The project went well.
-
-We would use Godot again.
-
-During the project, we convinced other research projects using the Oculus Quest 2 to explore Godot as an option.
-
-While there were bumps in the road, these were almost all related to.
+My main takeaway from this project was that, if the gripes with Godot are as minor as they are now, it has a bright future with further releases of the engine. The technical execution of the project went well and was completed to specification, and beyond that we have also inspired interest in other internal groups currently evaluating their options for Oculus Quest development.
